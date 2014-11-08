@@ -141,19 +141,22 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 
 	@Override
 	public void onPartialResults(Bundle b) {
+		int result = STATE_NONE;
+		String hyp = b.getString("hyp");
 		if (listening) {
-			int result = STATE_NONE;
-			final String hyp = b.getString("hyp");
 			if (hyp != null) {
 				String data[] = hyp.split(" ");
-				for (String string : data) {
-					if (result == STATE_MARK) {
-						if (string.contains(G.REC_WORD1) || string.contains(G.REC_WORD2)) {
+				// for (String string : data) {
+//					if (result == STATE_MARK) {
+					if (hyp.contains(G.REC_WORD1)
+					// || string.contains(G.REC_WORD2)
+					) {
 							result = STATE_MATCH;
 							jumpToActivity();
 						}
-					} else if (result == STATE_NONE) {
-						if (string.contains(G.REC_WORD1) || string.contains(G.REC_WORD2)) {
+					// }
+					else if (result == STATE_NONE) {
+						if (hyp.contains(G.REC_WORD1) || hyp.contains(G.REC_WORD2)) {
 							result = STATE_MARK;
 						}
 					}
@@ -166,7 +169,7 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 			} catch (RemoteException e) {
 				e.printStackTrace();
 			}
-		}
+		// }
 
 	}
 

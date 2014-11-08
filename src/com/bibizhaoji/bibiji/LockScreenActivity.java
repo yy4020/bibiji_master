@@ -69,7 +69,7 @@ public class LockScreenActivity extends Activity implements OnClickListener {
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		originalVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		maximalVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-		// playSound(G.RINGTON, G.VOLUME);
+		playSound(G.RINGTON, G.VOLUME);
 		gifAnim = (AnimationDrawable) gif.getBackground();
 		gifAnim.start();
 	}
@@ -79,8 +79,7 @@ public class LockScreenActivity extends Activity implements OnClickListener {
 		super.onPause();
 		stopSound();
 		// 恢复铃声
-		// audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVol,
-		// 0);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVol, 0);
 		// this.finish();
 	}
 

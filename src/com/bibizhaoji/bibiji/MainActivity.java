@@ -106,6 +106,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		// 主服务开关
 		case R.id.main_switcher:
 			if (Pref.isMainSwitcherOn()) {
+				Log.d("MainActivity", "STATE_OFF");
 				setState(STATE_OFF);
 				Pref.setMainSwitcher(this, false);
 				v.setBackgroundResource(R.drawable.main_switcher_off);
@@ -128,11 +129,22 @@ public class MainActivity extends Activity implements OnClickListener {
 				v.setBackgroundResource(R.drawable.night_mode_on);
 				Pref.setNightMode(this, true);
 				Intent i = new Intent(this, NightModeNoticeActivity.class);
-				this.startActivity(i);
+				this.startActivityForResult(i, 0000);
 			}
+			break;
+
 		case R.id.stop_btn:
 			setState(STATE_STOP);
 			break;
+		}
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (Pref.isMainSwitcherOn()) {
+			Intent i = new Intent(this, ClientAccSensorService.class);
+			startService(i);
 		}
 	}
 
@@ -148,13 +160,13 @@ public class MainActivity extends Activity implements OnClickListener {
 			break;
 		case STATE_ACTIVE:
 			Log.d(G.LOG_TAG, "*********set state");
-			// playSound(G.RINGTON, G.VOLUME);
+			playSound(G.RINGTON, G.VOLUME);
 			stateText.setBackgroundResource(R.drawable.bg_main_active);
 			stateGif.setBackgroundResource(R.drawable.state_active);
 			stopButton.setVisibility(View.VISIBLE);
 			break;
 		case STATE_STOP:
-			// stopSound();
+			stopSound();
 			stateText.setBackgroundResource(R.drawable.bg_main_stop);
 			stateGif.setBackgroundResource(R.drawable.state_stop);
 			stopButton.setVisibility(View.GONE);

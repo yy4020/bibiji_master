@@ -45,7 +45,7 @@ public class MyApp extends Application {
 	}
 
 	/**
-	 * 判断是否是工作时段
+	 * 判断是否是当天工作时段
 	 * 
 	 * @param mStartTime2
 	 *            起始时间数组

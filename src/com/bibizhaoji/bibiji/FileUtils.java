@@ -34,12 +34,12 @@ public class FileUtils {
 	/** 获取XXX.dic文件的路径 */
 	public static String getDicFilePath(Context context) {
 
-		return copyNativeLib(context, "lm", "3320.dic");
+		return copyNativeLib(context, "lm", "1663.dic");
 	}
 
 	/** 获取XXX.lm文件的路径 */
 	public static String getLmFilePath(Context context) {
-		return copyNativeLib(context, "lm", "3320.lm");
+		return copyNativeLib(context, "lm", "1663.lm");
 	}
 
 	public static String copyNativeLib(Context context, String DirName, String name) {

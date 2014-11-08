@@ -114,7 +114,7 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 	}
 
 	private void checkStatus() {
-		int updateInterval = 1000;
+		int updateInterval = 500;
 		if (G.isMainActivityRunning == false && (Math.abs(x) + Math.abs(y) + Math.abs(z) > shakeThreshold)) {
 			// 达到速度阀值，发出提示
 			Log.d(G.LOG_TAG, "运动中......");
@@ -133,7 +133,7 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 				if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_NONE) {
 					if (idle_count == 1) {
 						mIWorkerService.stop();
-						updateInterval = 1000;
+						updateInterval = 500;
 					} else if (idle_count == 0 || idle_count == 2) {
 						mIWorkerService.start();
 						idle_count = 0;
@@ -162,7 +162,7 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 						mark_count = 0;
 						idle_count = 0;
 					}
-					updateInterval = 1000;
+					updateInterval = 500;
 					Log.d(G.LOG_TAG, "STATE_MARK -->mark_count " + mark_count);
 					mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS, updateInterval);
 				}
@@ -175,6 +175,13 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 
 	@Override
 	public void onDestroy() {
+		try {
+			if (mIWorkerService != null) {
+				mIWorkerService.stop();
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 		unbindService(mConnection);
 		sensorManager.unregisterListener(this);
 		mHandler.removeCallbacksAndMessages(null);
@@ -185,6 +192,7 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+		initConnection();
 		Intent i = new Intent(WorkerRemoteRecognizerService.ACTION);
 		bindService(i, mConnection, Service.BIND_AUTO_CREATE);
 		Log.d(G.LOG_TAG_CONNECTION, "client service onStartCommand");

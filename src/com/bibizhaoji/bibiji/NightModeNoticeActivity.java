@@ -23,7 +23,7 @@ public class NightModeNoticeActivity extends Activity implements
     @Override
     public void onClick(View v) {
 	switch (v.getId()) {
-	case R.id.close_btn:
+		case R.id.close_btn:
 	    this.finish();
 	    // 模拟返回键退出
 	    // Instrumentation inst = new Instrumentation();
