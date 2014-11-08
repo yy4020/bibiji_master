@@ -13,10 +13,13 @@ public class ScreenBroadcastReceiver extends BroadcastReceiver {
 		Intent i = new Intent(context, ClientAccSensorService.class);
 		Log.d(G.LOG_TAG, "工作时间--->" + MyApp.isWorkingTime());
 
-		if (MyApp.isWorkingTime() && Intent.ACTION_SCREEN_OFF.equals(action)) {
+		if (Intent.ACTION_SCREEN_OFF.equals(action)) {
 			// 锁屏
-			Log.d(G.LOG_TAG, "SCREEN_OFF--->START SERVICE");
-			context.startService(i);
+			G.isScreenOff = true;
+			if (MyApp.isWorkingTime() && G.isWorkTime) {
+				Log.d(G.LOG_TAG, "SCREEN_OFF--->START SERVICE");
+				context.startService(i);
+			}
 
 		}
 		if (Intent.ACTION_SCREEN_ON.equals(action)) {

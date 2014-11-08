@@ -16,21 +16,25 @@ public class MyApp extends Application {
 	private static int[] mStartTime = { 0, 0 };// 默认00:00
 	private static int[] mEndTime = { 7, 0 };// 默认07:00
 
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		CrashHandler.getInstance().init(this);
 		Pref.getSharePrefenrences(this);
 
+		Alarm.initAlarm(this);
+
 		Log.d(G.LOG_TAG, "大开关--->" + Pref.isMainSwitcherOn());
 		Log.d(G.LOG_TAG, "工作时间--->" + isWorkingTime());
+		mScreenReceiver = new ScreenBroadcastReceiver();
+		startScreenBroadcastReceiver();
 
 		if (Pref.isMainSwitcherOn() && isWorkingTime()) {
-			mScreenReceiver = new ScreenBroadcastReceiver();
-			startScreenBroadcastReceiver();
 			Intent intent = new Intent(this, ClientAccSensorService.class);
 			startService(intent);
 		}
+
 	}
 
 	private void startScreenBroadcastReceiver() {
@@ -72,7 +76,8 @@ public class MyApp extends Application {
 			// 没开启免打扰模式，默认server可以运行
 			return true;
 		}
-
 	}
+
+
 
 }

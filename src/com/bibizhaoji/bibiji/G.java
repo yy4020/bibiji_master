@@ -15,6 +15,8 @@ public class G {
 	public static final float VOLUME = 1.0F;
 
 	public static boolean isMainActivityRunning;
+	public static boolean isWorkTime;
+	public static boolean isScreenOff;
 
 	public static int STOP_ANIM_DURATION = 2400;
 
