@@ -151,7 +151,6 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 						if (string.contains(G.REC_WORD1) || string.contains(G.REC_WORD2)) {
 							result = STATE_MATCH;
 							jumpToActivity();
-
 						}
 					} else if (result == STATE_NONE) {
 						if (string.contains(G.REC_WORD1) || string.contains(G.REC_WORD2)) {
@@ -181,6 +180,7 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 			i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 			startActivity(i);
 		}
+		recTask.stop();
 	}
 
 	@Override

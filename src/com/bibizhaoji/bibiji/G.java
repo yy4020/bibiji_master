@@ -16,4 +16,6 @@ public class G {
 
 	public static boolean isMainActivityRunning;
 
+	public static int STOP_ANIM_DURATION = 2400;
+
 }

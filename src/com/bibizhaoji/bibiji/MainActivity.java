@@ -1,11 +1,13 @@
 package com.bibizhaoji.bibiji;
 
-import java.util.Calendar;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -17,12 +19,16 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	private Button mainSwticher;
 	private Button nightModeSwitcher;
-	private int[] mStartTime = { 0, 0 };// 默认00:00
-	private int[] mEndTime = { 7, 0 };// 默认07:00
+	private Button stopButton;
 
 	private ImageView stateGif;
 	private ImageView stateText;
 	private AnimationDrawable gifAnim;
+	private MediaPlayer mediaPlayer;
+	private AudioManager audioManager;
+	private Handler handler;
+	private int originalVol;
+	private int maximalVol;
 
 	private static final int STATE_OFF = 0;
 	private static final int STATE_LISTENING = 1;
@@ -36,11 +42,14 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		mainSwticher = (Button) findViewById(R.id.main_switcher);
 		nightModeSwitcher = (Button) findViewById(R.id.night_mode_switcher);
+		stopButton = (Button) findViewById(R.id.stop_btn);
+
 		stateGif = (ImageView) findViewById(R.id.gif_state);
 		stateText = (ImageView) findViewById(R.id.text_state);
 
 		mainSwticher.setOnClickListener(this);
 		nightModeSwitcher.setOnClickListener(this);
+		stopButton.setOnClickListener(this);
 
 		gifAnim = (AnimationDrawable) stateGif.getBackground();
 		gifAnim.start();
@@ -51,21 +60,29 @@ public class MainActivity extends Activity implements OnClickListener {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
-
+		// 停掉监听服务
+		Intent i = new Intent(this, ClientAccSensorService.class);
+		stopService(i);
+		setState(STATE_ACTIVE);
 	}
 
 	@Override
 	protected void onResume() {
 		super.onResume();
 		G.isMainActivityRunning = true;
-		Intent i = new Intent(this, ClientAccSensorService.class);
-		startService(i);
+		if (Pref.isMainSwitcherOn()) {
+			Intent i = new Intent(this, ClientAccSensorService.class);
+			startService(i);
+		}
+
 	}
 
 	@Override
 	protected void onPause() {
 		super.onPause();
 		G.isMainActivityRunning = false;
+		Intent i = new Intent(this, ClientAccSensorService.class);
+		this.stopService(i);
 	}
 
 	@Override
@@ -111,8 +128,10 @@ public class MainActivity extends Activity implements OnClickListener {
 				Intent i = new Intent(this, NightModeNoticeActivity.class);
 				this.startActivity(i);
 			}
+		case R.id.stop_btn:
+			setState(STATE_STOP);
+			break;
 		}
-
 	}
 
 	private void setState(int state) {
@@ -126,12 +145,31 @@ public class MainActivity extends Activity implements OnClickListener {
 			stateGif.setBackgroundResource(R.drawable.state_listening);
 			break;
 		case STATE_ACTIVE:
+			Log.d(G.LOG_TAG, "*********set state");
+			// playSound(G.RINGTON, G.VOLUME);
 			stateText.setBackgroundResource(R.drawable.bg_main_active);
 			stateGif.setBackgroundResource(R.drawable.state_active);
+			stopButton.setVisibility(View.VISIBLE);
 			break;
 		case STATE_STOP:
+			// stopSound();
 			stateText.setBackgroundResource(R.drawable.bg_main_stop);
 			stateGif.setBackgroundResource(R.drawable.state_stop);
+			stopButton.setVisibility(View.GONE);
+			handler = new Handler();
+			handler.postDelayed(new Runnable() {
+
+				@Override
+				public void run() {
+					if (Pref.isMainSwitcherOn()) {
+						setState(STATE_LISTENING);
+						Intent i = new Intent(MainActivity.this, ClientAccSensorService.class);
+						startService(i);
+					} else {
+						setState(STATE_OFF);
+					}
+				}
+			}, G.STOP_ANIM_DURATION);
 			break;
 		default:
 			break;
@@ -140,39 +178,23 @@ public class MainActivity extends Activity implements OnClickListener {
 		gifAnim.start();
 	}
 
-	/**
-	 * 判断是否是工作时段
-	 * 
-	 * @param mStartTime2
-	 *            起始时间数组
-	 * @param mEndTime2
-	 *            结束时间数组
-	 * @return 是或否
-	 */
-	public static boolean isWorkingTime(int[] mStartTime2, int[] mEndTime2) {
-
-		if (Pref.isNightModeOn()) {
-			// 开启夜间免打扰模式，在夜间(00:00-07:00)server不允许运行
-			Calendar cal = Calendar.getInstance();// 当前日期
-			int hour = cal.get(Calendar.HOUR_OF_DAY);// 获取小时
-			int minute = cal.get(Calendar.MINUTE);// 获取分钟
-			int minuteOfDay = hour * 60 + minute;// 从0:00分开是到目前为止的分钟数
-			final int start = mStartTime2[0] * 60 + mStartTime2[1];// 起始时间
-			// 00:00的分钟数
-			final int end = mEndTime2[0] * 60 + mEndTime2[1];// 结束时间 07:00的分钟数
-
-			if (minuteOfDay >= start && minuteOfDay <= end) {
-				System.out.println("在时间范围内");
-				return false;
-			} else {
-				System.out.println("在时间范围外");
-				return true;
-			}
-		} else {
-			// 没开启免打扰模式，默认server可以运行
-			return true;
-		}
-
+	private void playSound(int soundResourceId, float volume) {
+		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+		originalVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+		maximalVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maximalVol, 0);
+		mediaPlayer = MediaPlayer.create(this, soundResourceId);
+		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		mediaPlayer.setLooping(true);
+		mediaPlayer.start();
 	}
 
+	private void stopSound() {
+		if (mediaPlayer != null) {
+			mediaPlayer.stop();
+			mediaPlayer.release();
+			mediaPlayer = null;
+			audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVol, 0);
+		}
+	}
 }

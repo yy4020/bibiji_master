@@ -144,7 +144,15 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 					mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS, updateInterval);
 				} else if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_MATCH) {
 					Log.d(G.LOG_TAG, "STATE_MATCH ");
-
+					// if (G.isMainActivityRunning) {
+					// Intent intent = new Intent(this, MainActivity.class);
+					// intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					// startActivity(intent);
+					// } else {
+					// Intent i = new Intent(this, LockScreenActivity.class);
+					// i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+					// startActivity(i);
+					// }
 					mIWorkerService.stop();
 					stopSelf();
 				} else if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_MARK) {
@@ -167,12 +175,12 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 
 	@Override
 	public void onDestroy() {
-		super.onDestroy();
-		sensorManager.unregisterListener(this);
 		unbindService(mConnection);
+		sensorManager.unregisterListener(this);
 		mHandler.removeCallbacksAndMessages(null);
 		mHandler = null;
 		Log.d(G.LOG_TAG, "onDestroy()");
+		super.onDestroy();
 	}
 
 	@Override
