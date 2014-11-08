@@ -30,6 +30,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	private int originalVol;
 	private int maximalVol;
 
+	private boolean isJumpBack = false;
+
 	private static final int STATE_OFF = 0;
 	private static final int STATE_LISTENING = 1;
 	private static final int STATE_ACTIVE = 2;
@@ -61,8 +63,9 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		// 停掉监听服务
+		isJumpBack = true;
 		Intent i = new Intent(this, ClientAccSensorService.class);
-		stopService(i);
+		this.stopService(i);
 		setState(STATE_ACTIVE);
 	}
 
@@ -70,11 +73,10 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onResume() {
 		super.onResume();
 		G.isMainActivityRunning = true;
-		if (Pref.isMainSwitcherOn()) {
+		if (Pref.isMainSwitcherOn() && !isJumpBack) {
 			Intent i = new Intent(this, ClientAccSensorService.class);
 			startService(i);
 		}
-
 	}
 
 	@Override
