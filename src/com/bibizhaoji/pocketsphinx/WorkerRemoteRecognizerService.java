@@ -25,7 +25,7 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 	public static final String ACTION = "com.bibizhaoji.action.CONNECT_TO_SERVICE";
 	private RecognizerTask recTask;
 	private Thread recThread;
-	private boolean listening;
+	// private boolean listening;
 	private long tStart;
 	private long tEnd;
 	Context mContext;
@@ -115,7 +115,7 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 		@Override
 		public boolean start() throws RemoteException {
 			mReference.get().recTask.start();
-			mReference.get().listening = true;
+			// mReference.get().listening = true;
 			Log.d(G.LOG_TAG, "worker recTask.start()");
 			return true;
 		}
@@ -125,7 +125,7 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 			mReference.get().recTask.stop();
 			Log.d(G.LOG_TAG, "worker recTask.stop()");
 			mReference.get().mClient.onResult(STATE_NONE);
-			mReference.get().listening = false;
+			// mReference.get().listening = false;
 			return true;
 		}
 
@@ -143,9 +143,9 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 	public void onPartialResults(Bundle b) {
 		int result = STATE_NONE;
 		String hyp = b.getString("hyp");
-		if (listening) {
+		// if (listening) {
 			if (hyp != null) {
-				String data[] = hyp.split(" ");
+			// String data[] = hyp.split(" ");
 				// for (String string : data) {
 //					if (result == STATE_MARK) {
 					if (hyp.contains(G.REC_WORD1)
@@ -162,7 +162,7 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 					}
 
 				}
-			}
+		// }
 			Log.d(G.LOG_TAG_RECWORD, "*********get rec_word:" + hyp);
 			try {
 				mClient.onResult(result);

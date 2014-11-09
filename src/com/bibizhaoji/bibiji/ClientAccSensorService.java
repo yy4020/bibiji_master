@@ -120,7 +120,8 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 			Log.d(G.LOG_TAG, "运动中......");
 			try {
 				mIWorkerService.stop();
-				mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS, updateInterval * 3);
+				mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS,
+						updateInterval);
 
 			} catch (RemoteException e) {
 				e.printStackTrace();
@@ -133,7 +134,7 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 				if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_NONE) {
 					if (idle_count == 1) {
 						mIWorkerService.stop();
-						updateInterval = 500;
+						updateInterval = 200;
 					} else if (idle_count == 0 || idle_count == 2) {
 						mIWorkerService.start();
 						idle_count = 0;
