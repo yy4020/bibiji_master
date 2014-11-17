@@ -26,11 +26,12 @@ public class MyApp extends Application {
 		Alarm.initAlarm(this);
 
 		Log.d(G.LOG_TAG, "大开关--->" + Pref.isMainSwitcherOn());
-		Log.d(G.LOG_TAG, "工作时间--->" + isWorkingTime());
+//		Log.d(G.LOG_TAG, "工作时间--->" + isWorkingTime());
 		mScreenReceiver = new ScreenBroadcastReceiver();
 		startScreenBroadcastReceiver();
 
-		if (Pref.isMainSwitcherOn() && isWorkingTime()) {
+//		 && isWorkingTime()
+		if (Pref.isMainSwitcherOn()) {
 			Intent intent = new Intent(this, ClientAccSensorService.class);
 			startService(intent);
 		}

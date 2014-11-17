@@ -17,12 +17,14 @@ import com.bibizhaoji.bibiji.aidl.IPPClient;
 import com.bibizhaoji.bibiji.aidl.IWorkerService;
 import com.bibizhaoji.bibiji.utils.Pref;
 
-public class WorkerRemoteRecognizerService extends Service implements RecognitionListener {
+public class WorkerRemoteRecognizerService extends Service implements
+		RecognitionListener {
 	static {
 		System.loadLibrary("pocketsphinx_jni");
 	}
 
 	public static final String ACTION = "com.bibizhaoji.action.CONNECT_TO_SERVICE";
+	public static final String IS_SHOW_ANIM = "is_show_anim";
 	private RecognizerTask recTask;
 	private Thread recThread;
 	// private boolean listening;
@@ -40,11 +42,11 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 
 	@Override
 	public void onCreate() {
-		// TODO Auto-generated method stub
 		super.onCreate();
 		Log.d(G.LOG_TAG, "RemoteRecognizerService created...");
 		mContext = this;
-		Log.d(G.LOG_TAG, "isNoDisturbingModeOnlyNight------>" + Pref.isNightModeOn());
+		Log.d(G.LOG_TAG,
+				"isNoDisturbingModeOnlyNight------>" + Pref.isNightModeOn());
 
 		recTask = new RecognizerTask(mContext);
 		recThread = new Thread(this.recTask);
@@ -82,10 +84,12 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 		private WeakReference<WorkerRemoteRecognizerService> mReference;
 
 		public MyBinder(WorkerRemoteRecognizerService blockCentralService) {
-			mReference = new WeakReference<WorkerRemoteRecognizerService>(blockCentralService);
+			mReference = new WeakReference<WorkerRemoteRecognizerService>(
+					blockCentralService);
 		}
 
-		private static MyBinder getInstance(WorkerRemoteRecognizerService workerService) {
+		private static MyBinder getInstance(
+				WorkerRemoteRecognizerService workerService) {
 			if (sInstance == null) {
 				synchronized (MyBinder.class) {
 					if (sInstance == null) {
@@ -143,33 +147,19 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 	public void onPartialResults(Bundle b) {
 		int result = STATE_NONE;
 		String hyp = b.getString("hyp");
-		// if (listening) {
-			if (hyp != null) {
-			// String data[] = hyp.split(" ");
-				// for (String string : data) {
-//					if (result == STATE_MARK) {
-					if (hyp.contains(G.REC_WORD1)
-					// || string.contains(G.REC_WORD2)
-					) {
-							result = STATE_MATCH;
-							jumpToActivity();
-						}
-					// }
-					else if (result == STATE_NONE) {
-						if (hyp.contains(G.REC_WORD1) || hyp.contains(G.REC_WORD2)) {
-							result = STATE_MARK;
-						}
-					}
-
-				}
-		// }
-			Log.d(G.LOG_TAG_RECWORD, "*********get rec_word:" + hyp);
-			try {
-				mClient.onResult(result);
-			} catch (RemoteException e) {
-				e.printStackTrace();
+		if (hyp != null) {
+			if (hyp.contains(G.REC_WORD1)) {
+				result = STATE_MATCH;
+				jumpToActivity();
 			}
-		// }
+
+		}
+		Log.d(G.LOG_TAG_RECWORD, "*********get rec_word:" + hyp);
+		try {
+			mClient.onResult(result);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
 
 	}
 
@@ -177,6 +167,7 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 		if (G.isMainActivityRunning) {
 			Intent intent = new Intent(this, MainActivity.class);
 			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			intent.putExtra(IS_SHOW_ANIM , true);
 			startActivity(intent);
 		} else {
 			Intent i = new Intent(this, LockScreenActivity.class);
@@ -190,6 +181,9 @@ public class WorkerRemoteRecognizerService extends Service implements Recognitio
 	public void onResults(Bundle b) {
 		final String hyp = b.getString("hyp");
 		Log.d(G.LOG_TAG, "|||||||||||recognizition finished:" + hyp);
+		recTask.start();
+		Log.d(G.LOG_TAG, "|||||||||||start task");
+
 	}
 
 	@Override

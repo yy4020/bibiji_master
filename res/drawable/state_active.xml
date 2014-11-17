@@ -5,6 +5,7 @@
     <item android:duration="78" android:drawable="@drawable/state_active_1" />
     <item android:duration="78" android:drawable="@drawable/state_active_2" />
     <item android:duration="115" android:drawable="@drawable/state_active_3" />
+    
     <item android:duration="115" android:drawable="@drawable/state_active_4" />
     <item android:duration="52" android:drawable="@drawable/state_active_1" />
     <item android:duration="53" android:drawable="@drawable/state_active_2" />

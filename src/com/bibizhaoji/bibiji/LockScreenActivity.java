@@ -2,6 +2,8 @@ package com.bibizhaoji.bibiji;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.graphics.drawable.AnimationDrawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -31,6 +33,7 @@ public class LockScreenActivity extends Activity implements OnClickListener {
 	private Handler handler;
 	private int originalVol;
 	private int maximalVol;
+	private Context mContext;
 
 	@SuppressLint("InlinedApi")
 	@Override
@@ -60,6 +63,7 @@ public class LockScreenActivity extends Activity implements OnClickListener {
 		stopBtn = (Button) findViewById(R.id.stop_btn_lockscreen);
 
 		stopBtn.setOnClickListener(this);
+		mContext = this;
 
 	}
 
@@ -69,6 +73,7 @@ public class LockScreenActivity extends Activity implements OnClickListener {
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		originalVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		maximalVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+		
 		playSound(G.RINGTON, G.VOLUME);
 		gifAnim = (AnimationDrawable) gif.getBackground();
 		gifAnim.start();
@@ -97,7 +102,7 @@ public class LockScreenActivity extends Activity implements OnClickListener {
 	 *            音量(0.0-1.0)
 	 */
 	private void playSound(int soundResourceId, float volume) {
-		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maximalVol, 0);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVol, 0);
 
 		mediaPlayer = MediaPlayer.create(this, soundResourceId);
 		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
@@ -136,19 +141,22 @@ public class LockScreenActivity extends Activity implements OnClickListener {
 		switch (v.getId()) {
 		case R.id.stop_btn_lockscreen:
 			stopSound();
-			stopBtn.setVisibility(View.GONE);
-			gif.setBackgroundResource(R.drawable.state_stop);
-			text.setBackgroundResource(R.drawable.bg_main_stop);
-			gifAnim = (AnimationDrawable) gif.getBackground();
-			handler = new Handler();
-			gifAnim.start();
-			handler.postDelayed(new Runnable() {
-
-				@Override
-				public void run() {
-					finish();
-				}
-			}, G.STOP_ANIM_DURATION);
+//			stopBtn.setVisibility(View.GONE);
+//			gif.setBackgroundResource(R.drawable.state_stop);
+//			text.setBackgroundResource(R.drawable.bg_main_stop);
+//			gifAnim = (AnimationDrawable) gif.getBackground();
+//			handler = new Handler();
+//			gifAnim.start();
+//			handler.postDelayed(new Runnable() {
+//
+//				@Override
+//				public void run() {
+//					finish();
+//				}
+//			}, G.STOP_ANIM_DURATION);
+			Intent i = new Intent(mContext, ClientAccSensorService.class);
+			startService(i);
+			finish();
 			break;
 		}
 	}

@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import com.bibizhaoji.bibiji.utils.Pref;
+import com.bibizhaoji.pocketsphinx.WorkerRemoteRecognizerService;
 
 public class MainActivity extends Activity implements OnClickListener {
 
@@ -56,17 +57,28 @@ public class MainActivity extends Activity implements OnClickListener {
 		gifAnim = (AnimationDrawable) stateGif.getBackground();
 		gifAnim.start();
 		// 初始化配置文件
-		Pref.getSharePrefenrences(this);
+//		Pref.getSharePrefenrences(this);
 	}
 
 	@Override
 	protected void onNewIntent(Intent intent) {
 		super.onNewIntent(intent);
 		// 停掉监听服务
-		isJumpBack = true;
-		Intent i = new Intent(this, ClientAccSensorService.class);
-		this.stopService(i);
-		setState(STATE_ACTIVE);
+		try {
+			boolean isShowAnim = intent.getBooleanExtra(WorkerRemoteRecognizerService.IS_SHOW_ANIM, false);
+			
+			if(isShowAnim){
+				isJumpBack = true;
+				Intent i = new Intent(this, ClientAccSensorService.class);
+				this.stopService(i);
+				setState(STATE_ACTIVE);
+				
+			}
+			
+		} catch (Exception e) {
+			
+		}
+		
 	}
 
 	@Override
@@ -83,13 +95,14 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onPause() {
 		super.onPause();
 		G.isMainActivityRunning = false;
-		Intent i = new Intent(this, ClientAccSensorService.class);
-		this.stopService(i);
+//		Intent i = new Intent(this, ClientAccSensorService.class);
+//		this.stopService(i);
 	}
 
 	@Override
 	protected void onStart() {
 		super.onStart();
+		Log.d("Main onstart()", "main 大开关-->" + Pref.isMainSwitcherOn());	
 		if (Pref.isMainSwitcherOn()) {
 			mainSwticher.setBackgroundResource(R.drawable.main_switcher_on);
 			setState(STATE_LISTENING);
@@ -166,24 +179,11 @@ public class MainActivity extends Activity implements OnClickListener {
 			stopButton.setVisibility(View.VISIBLE);
 			break;
 		case STATE_STOP:
+			Intent i = new Intent(this, ClientAccSensorService.class);
+			startService(i);
 			stopSound();
-			stateText.setBackgroundResource(R.drawable.bg_main_stop);
-			stateGif.setBackgroundResource(R.drawable.state_stop);
+			setState(STATE_LISTENING);
 			stopButton.setVisibility(View.GONE);
-			handler = new Handler();
-			handler.postDelayed(new Runnable() {
-
-				@Override
-				public void run() {
-					if (Pref.isMainSwitcherOn()) {
-						setState(STATE_LISTENING);
-						Intent i = new Intent(MainActivity.this, ClientAccSensorService.class);
-						startService(i);
-					} else {
-						setState(STATE_OFF);
-					}
-				}
-			}, G.STOP_ANIM_DURATION);
 			break;
 		default:
 			break;
@@ -196,7 +196,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		originalVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		maximalVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maximalVol, 0);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVol, 0);
 		mediaPlayer = MediaPlayer.create(this, soundResourceId);
 		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		mediaPlayer.setLooping(true);

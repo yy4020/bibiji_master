@@ -1,5 +1,7 @@
 package com.bibizhaoji.bibiji;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
@@ -9,6 +11,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -18,9 +21,11 @@ import android.os.RemoteException;
 import com.bibizhaoji.bibiji.aidl.IPPClient;
 import com.bibizhaoji.bibiji.aidl.IWorkerService;
 import com.bibizhaoji.bibiji.utils.Log;
+import com.bibizhaoji.bibiji.utils.Pref;
 import com.bibizhaoji.pocketsphinx.WorkerRemoteRecognizerService;
 
-public class ClientAccSensorService extends Service implements SensorEventListener {
+public class ClientAccSensorService extends Service implements
+		SensorEventListener {
 	private SensorManager sensorManager;
 	private Sensor accSensor;
 
@@ -30,7 +35,7 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 	private ServiceConnection mConnection;
 
 	// 速度阈值，当摇晃速度达到这值后产生作用
-	private int shakeThreshold = 15;
+	private int shakeThreshold = 25;
 	// 两次检测的时间间隔
 	static int UPDATE_INTERVAL = 5 * 10;
 
@@ -52,9 +57,19 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 	public void onCreate() {
 		super.onCreate();
 		Log.d(G.LOG_TAG, "client service onCreate");
-		initSensor();
+		// initSensor();
 		initConnection();
 		initHandler();
+		startForegroundCompat();
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		initConnection();
+		Intent i = new Intent(WorkerRemoteRecognizerService.ACTION);
+		bindService(i, mConnection, Service.BIND_AUTO_CREATE);
+		Log.d(G.LOG_TAG_CONNECTION, "client service onStartCommand");
+		return START_STICKY;
 	}
 
 	private void initHandler() {
@@ -63,13 +78,15 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 			public void handleMessage(Message msg) {
 				switch (msg.what) {
 				case MSG_CHECK_STATUS:
-					checkStatus();
+					// checkStatus();
+					startRecognizer();
 					break;
 				default:
 					super.handleMessage(msg);
 					break;
 				}
 			}
+
 		};
 	}
 
@@ -78,7 +95,8 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 
 			@Override
 			public void onServiceDisconnected(ComponentName name) {
-				Log.d(G.LOG_TAG_CONNECTION, "RemoteClient recognizer service disconnected..");
+				Log.d(G.LOG_TAG_CONNECTION,
+						"RemoteClient recognizer service disconnected..");
 				mIWorkerService = null;
 			}
 
@@ -88,16 +106,17 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 				Log.d(G.LOG_TAG_CONNECTION, "获取IWorkerService 对象");
 				mIWorkerService = IWorkerService.Stub.asInterface(service);
 				try {
-					// Log.d(G.LOG_TAG,"recognizer state -->"+mIRemoteRecognizerService.getState());
 					mIWorkerService.register(mClient);
 
 				} catch (RemoteException e) {
-					Log.d(G.LOG_TAG_CONNECTION, "获取IworkerService对象 error -->" + e);
+					Log.d(G.LOG_TAG_CONNECTION, "获取IworkerService对象 error -->"
+							+ e);
 				}
 				try {
+					Log.d(G.LOG_TAG_CONNECTION, "开启 IWorkerService");
+
 					mIWorkerService.start();
 				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				mHandler.sendEmptyMessage(MSG_CHECK_STATUS);
@@ -105,17 +124,32 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 		};
 	}
 
+	private void startRecognizer() {
+		try {
+			if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_MARK) {
+				mIWorkerService.stop();
+				mIWorkerService.start();
+
+				Log.d("client server", "mIWorkerService---> stop && start");
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void initSensor() {
 		sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 		// 加速度传感器
 		accSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		// 注册监听器
-		sensorManager.registerListener(this, accSensor, SensorManager.SENSOR_DELAY_GAME);
+		sensorManager.registerListener(this, accSensor,
+				SensorManager.SENSOR_DELAY_GAME);
 	}
 
 	private void checkStatus() {
 		int updateInterval = 500;
-		if (G.isMainActivityRunning == false && (Math.abs(x) + Math.abs(y) + Math.abs(z) > shakeThreshold)) {
+		if (G.isMainActivityRunning == false
+				&& (Math.abs(x) + Math.abs(y) + Math.abs(z) > shakeThreshold)) {
 			// 达到速度阀值，发出提示
 			Log.d(G.LOG_TAG, "运动中......");
 			try {
@@ -142,18 +176,10 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 					}
 					idle_count++;
 					Log.d(G.LOG_TAG, "STATE_NONE count-->" + idle_count);
-					mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS, updateInterval);
+					mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS,
+							updateInterval);
 				} else if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_MATCH) {
 					Log.d(G.LOG_TAG, "STATE_MATCH ");
-					// if (G.isMainActivityRunning) {
-					// Intent intent = new Intent(this, MainActivity.class);
-					// intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					// startActivity(intent);
-					// } else {
-					// Intent i = new Intent(this, LockScreenActivity.class);
-					// i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					// startActivity(i);
-					// }
 					mIWorkerService.stop();
 					stopSelf();
 				} else if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_MARK) {
@@ -165,7 +191,8 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 					}
 					updateInterval = 500;
 					Log.d(G.LOG_TAG, "STATE_MARK -->mark_count " + mark_count);
-					mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS, updateInterval);
+					mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS,
+							updateInterval);
 				}
 
 			} catch (Exception e) {
@@ -184,20 +211,40 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 			e.printStackTrace();
 		}
 		unbindService(mConnection);
-		sensorManager.unregisterListener(this);
+		// sensorManager.unregisterListener(this);
 		mHandler.removeCallbacksAndMessages(null);
 		mHandler = null;
 		Log.d(G.LOG_TAG, "onDestroy()");
+
+		if(Pref.isMainSwitcherOn()){
+			initConnection();
+			Log.d(G.LOG_TAG, "initConnection()--->restart server");
+		}
+		
 		super.onDestroy();
 	}
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		initConnection();
-		Intent i = new Intent(WorkerRemoteRecognizerService.ACTION);
-		bindService(i, mConnection, Service.BIND_AUTO_CREATE);
-		Log.d(G.LOG_TAG_CONNECTION, "client service onStartCommand");
-		return super.onStartCommand(intent, flags, startId);
+	private void startForegroundCompat() {
+		try {
+//			Notification status = new Notification();
+//			status.flags |= Notification.FLAG_FOREGROUND_SERVICE;
+//
+//			startForeground(1, status);
+			
+			Notification notification = new Notification(R.drawable.ic_launcher, "逼逼机正在启动...",
+			        System.currentTimeMillis());
+			Intent notificationIntent = new Intent();
+			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			notification.setLatestEventInfo(this, "逼逼机","前台服务", pendingIntent);
+			startForeground(22, notification);
+
+			if (Build.VERSION.SDK_INT < 18) {
+				Log.d(G.LOG_TAG, "startForgroundCompat");
+			}
+		} catch (Exception e) {
+			Log.e(G.LOG_TAG, e.toString());
+		}
+
 	}
 
 	@Override
@@ -212,4 +259,5 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 		y = event.values[SensorManager.DATA_Y];
 		z = event.values[SensorManager.DATA_Z];
 	}
+
 }

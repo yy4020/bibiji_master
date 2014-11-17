@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.bibizhaoji.bibiji.utils.Log;
+import com.bibizhaoji.bibiji.utils.Pref;
 
 public class ScreenBroadcastReceiver extends BroadcastReceiver {
 	@Override
@@ -16,25 +17,25 @@ public class ScreenBroadcastReceiver extends BroadcastReceiver {
 		if (Intent.ACTION_SCREEN_OFF.equals(action)) {
 			// 锁屏
 			Log.d(G.LOG_TAG, "SCREEN_OFF---");
-			G.isScreenOff = true;
-			// && G.isWorkTime
-			if (MyApp.isWorkingTime()) {
+			
+			if (Pref.isMainSwitcherOn()) {
 				context.startService(i);
+				Log.d(G.LOG_TAG, "start service---");
 			}
 
 		}
-		if (Intent.ACTION_SCREEN_ON.equals(action)) {
-			// 开屏
-			Log.d(G.LOG_TAG, "SCREEN_ON--->END SERVICE");
-			context.stopService(i);
-
-		}
-		if (Intent.ACTION_USER_PRESENT.equals(action)) {
-			// 解锁
-			Log.d(G.LOG_TAG, "解锁dfdfsdf--->END SERVICE");
-			context.stopService(i);
-
-		}
+//		if (Intent.ACTION_SCREEN_ON.equals(action)) {
+//			// 开屏
+//			Log.d(G.LOG_TAG, "SCREEN_ON--->END SERVICE");
+//			context.stopService(i);
+//
+//		}
+//		if (Intent.ACTION_USER_PRESENT.equals(action)) {
+//			// 解锁
+//			Log.d(G.LOG_TAG, "解锁dfdfsdf--->END SERVICE");
+//			context.stopService(i);
+//
+//		}
 
 	}
 

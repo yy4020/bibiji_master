@@ -48,16 +48,20 @@
         </activity>
 
         <!-- === Services === -->
-        <service android:name="com.bibizhaoji.bibiji.MediaButtonListenerService" >
+        <service 
+            android:name="com.bibizhaoji.bibiji.MediaButtonListenerService" >
         </service>
-        <service android:name="com.bibizhaoji.pocketsphinx.PocketSphinxService" >
-        </service>
-        <service android:name="com.bibizhaoji.pocketsphinx.WorkerRemoteRecognizerService" >
+        
+        <service 
+            android:name="com.bibizhaoji.pocketsphinx.WorkerRemoteRecognizerService" >
             <intent-filter>
                 <action android:name="com.bibizhaoji.action.CONNECT_TO_SERVICE" />
             </intent-filter>
         </service>
-        <service android:name="com.bibizhaoji.bibiji.ClientAccSensorService" >
+        
+        <service 
+            android:name="com.bibizhaoji.bibiji.ClientAccSensorService"
+            >
         </service>
 
         <!-- === Receivers === -->
