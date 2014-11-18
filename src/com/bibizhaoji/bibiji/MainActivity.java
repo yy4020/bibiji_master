@@ -120,11 +120,11 @@ public class MainActivity extends Activity implements OnClickListener {
 		case R.id.main_switcher:
 			if (Pref.isMainSwitcherOn()) {
 				Log.d("MainActivity", "STATE_OFF");
+				Intent i = new Intent(this, ClientAccSensorService.class);
+				this.stopService(i);
 				setState(STATE_OFF);
 				Pref.setMainSwitcher(this, false);
 				v.setBackgroundResource(R.drawable.main_switcher_off);
-				Intent i = new Intent(this, ClientAccSensorService.class);
-				this.stopService(i);
 			} else {
 				setState(STATE_LISTENING);
 				Pref.setMainSwitcher(this, true);
@@ -164,6 +164,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	private void setState(int state) {
 		switch (state) {
 		case STATE_OFF:
+			stopSound();
+			stopButton.setVisibility(View.GONE);
 			stateText.setBackgroundResource(R.drawable.bg_main_off);
 			stateGif.setBackgroundResource(R.drawable.state_off);
 			break;

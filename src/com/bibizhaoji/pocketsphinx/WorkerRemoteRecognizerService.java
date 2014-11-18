@@ -181,8 +181,11 @@ public class WorkerRemoteRecognizerService extends Service implements
 	public void onResults(Bundle b) {
 		final String hyp = b.getString("hyp");
 		Log.d(G.LOG_TAG, "|||||||||||recognizition finished:" + hyp);
-		recTask.start();
-		Log.d(G.LOG_TAG, "|||||||||||start task");
+		
+		if(Pref.isMainSwitcherOn()){
+			recTask.start();
+			Log.d(G.LOG_TAG, "|||||||||||start task");
+		}
 
 	}
 

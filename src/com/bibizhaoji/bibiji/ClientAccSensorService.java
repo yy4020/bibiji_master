@@ -216,11 +216,6 @@ public class ClientAccSensorService extends Service implements
 		mHandler = null;
 		Log.d(G.LOG_TAG, "onDestroy()");
 
-		if(Pref.isMainSwitcherOn()){
-			initConnection();
-			Log.d(G.LOG_TAG, "initConnection()--->restart server");
-		}
-		
 		super.onDestroy();
 	}
 
@@ -231,12 +226,12 @@ public class ClientAccSensorService extends Service implements
 //
 //			startForeground(1, status);
 			
-			Notification notification = new Notification(R.drawable.ic_launcher, "逼逼机正在启动...",
+			Notification notification = new Notification(R.drawable.ic_launcher, "逼逼机已启动...",
 			        System.currentTimeMillis());
 			Intent notificationIntent = new Intent();
 			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 			notification.setLatestEventInfo(this, "逼逼机","前台服务", pendingIntent);
-			startForeground(22, notification);
+			startForeground(1, notification);
 
 			if (Build.VERSION.SDK_INT < 18) {
 				Log.d(G.LOG_TAG, "startForgroundCompat");
