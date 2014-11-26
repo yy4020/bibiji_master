@@ -12,12 +12,15 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.bibizhaoji.bibiji.utils.Pref;
 import com.bibizhaoji.pocketsphinx.WorkerRemoteRecognizerService;
 
 public class MainActivity extends Activity implements OnClickListener {
 
+	private RelativeLayout guidLayout;
+	private RelativeLayout mainLayout;
 	private Button mainSwticher;
 	private Button nightModeSwitcher;
 	private Button stopButton;
@@ -42,7 +45,19 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-
+		
+		guidLayout = (RelativeLayout) findViewById(R.id.guid);
+		mainLayout = (RelativeLayout) findViewById(R.id.mainLayout);
+		guidLayout.setOnClickListener(this);
+		
+		if(Pref.isFirstInstall()){
+			guidLayout.setVisibility(View.VISIBLE);
+			mainLayout.setVisibility(View.GONE);
+		}else{
+			guidLayout.setVisibility(View.GONE);
+			mainLayout.setVisibility(View.VISIBLE);
+		}
+		
 		mainSwticher = (Button) findViewById(R.id.main_switcher);
 		nightModeSwitcher = (Button) findViewById(R.id.night_mode_switcher);
 		stopButton = (Button) findViewById(R.id.stop_btn);
@@ -95,8 +110,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected void onPause() {
 		super.onPause();
 		G.isMainActivityRunning = false;
-//		Intent i = new Intent(this, ClientAccSensorService.class);
-//		this.stopService(i);
+		Intent i = new Intent(this, ClientAccSensorService.class);
+		this.stopService(i);
 	}
 
 	@Override
@@ -113,9 +128,24 @@ public class MainActivity extends Activity implements OnClickListener {
 		nightModeSwitcher.setBackgroundResource(Pref.isNightModeOn() ? R.drawable.night_mode_on : R.drawable.night_mode_off);
 	}
 
+	int count = 0;
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
+		case R.id.guid:
+			if(count == 0){
+				ImageView img = (ImageView) findViewById(R.id.guidImage);
+				img.setBackgroundResource(R.drawable.thanks);
+			}else
+			if(count == 1){
+				guidLayout.setVisibility(View.GONE);
+				mainLayout.setVisibility(View.VISIBLE);
+				Pref.setIsFirstInstall(this, false);
+				count = 0;
+			}
+			count++;
+			break;
+			
 		// 主服务开关
 		case R.id.main_switcher:
 			if (Pref.isMainSwitcherOn()) {
@@ -198,7 +228,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		originalVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		maximalVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVol, 0);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maximalVol, 0);
 		mediaPlayer = MediaPlayer.create(this, soundResourceId);
 		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		mediaPlayer.setLooping(true);

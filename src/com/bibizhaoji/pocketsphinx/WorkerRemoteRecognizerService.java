@@ -182,10 +182,10 @@ public class WorkerRemoteRecognizerService extends Service implements
 		final String hyp = b.getString("hyp");
 		Log.d(G.LOG_TAG, "|||||||||||recognizition finished:" + hyp);
 		
-		if(Pref.isMainSwitcherOn()){
-			recTask.start();
-			Log.d(G.LOG_TAG, "|||||||||||start task");
-		}
+//		if(Pref.isMainSwitcherOn() && !G.isCallPhone){
+//			recTask.start();
+//			Log.d(G.LOG_TAG, "|||||||||||start task");
+//		}
 
 	}
 

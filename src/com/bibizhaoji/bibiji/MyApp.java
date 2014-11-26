@@ -12,7 +12,7 @@ import com.bibizhaoji.crash.CrashHandler;
 
 public class MyApp extends Application {
 	public static final String TAG = MyApp.class.getSimpleName();
-	private ScreenBroadcastReceiver mScreenReceiver;
+	private MyBroadcastReceiver mReceiver;
 	private static int[] mStartTime = { 0, 0 };// 默认00:00
 	private static int[] mEndTime = { 7, 0 };// 默认07:00
 
@@ -23,13 +23,13 @@ public class MyApp extends Application {
 		CrashHandler.getInstance().init(this);
 		Pref.getSharePrefenrences(this);
 
-		Alarm.initAlarm(this);
+//		Alarm.initAlarm(this);
 
 		Log.d(G.LOG_TAG, "大开关--->" + Pref.isMainSwitcherOn());
 //		Log.d(G.LOG_TAG, "工作时间--->" + isWorkingTime());
-		mScreenReceiver = new ScreenBroadcastReceiver();
-		startScreenBroadcastReceiver();
 
+		mReceiver = new MyBroadcastReceiver();
+		startScreenBroadcastReceiver();
 //		 && isWorkingTime()
 		if (Pref.isMainSwitcherOn()) {
 			Intent intent = new Intent(this, ClientAccSensorService.class);
@@ -42,7 +42,7 @@ public class MyApp extends Application {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(Intent.ACTION_SCREEN_ON);
 		filter.addAction(Intent.ACTION_SCREEN_OFF);
-		registerReceiver(mScreenReceiver, filter);
+		registerReceiver(mReceiver, filter);
 	}
 
 	/**

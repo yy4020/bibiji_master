@@ -17,7 +17,7 @@ public class G {
 	public static boolean isMainActivityRunning;
 	public static boolean isWorkTime;
 	public static boolean isScreenOff;
+	public static boolean isCallPhone = true;
 
 	public static int STOP_ANIM_DURATION = 2400;
-
 }
