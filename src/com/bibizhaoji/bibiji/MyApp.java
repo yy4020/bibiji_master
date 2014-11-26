@@ -30,7 +30,6 @@ public class MyApp extends Application {
 
 		mReceiver = new MyBroadcastReceiver();
 		startScreenBroadcastReceiver();
-//		 && isWorkingTime()
 		if (Pref.isMainSwitcherOn()) {
 			Intent intent = new Intent(this, ClientAccSensorService.class);
 			startService(intent);

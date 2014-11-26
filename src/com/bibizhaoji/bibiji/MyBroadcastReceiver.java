@@ -20,7 +20,7 @@ public class MyBroadcastReceiver extends BroadcastReceiver {
 		if (Intent.ACTION_SCREEN_OFF.equals(action)) {
 			// 锁屏
 			Log.d(G.LOG_TAG, "SCREEN_OFF---");
-			Log.d(G.LOG_TAG, "手机状态————>" + G.isCallPhone);
+			Log.d(G.LOG_TAG, "手机空闲状态————>" + G.isCallPhone);
 
 			if (Pref.isMainSwitcherOn() && G.isCallPhone) {
 				G.isScreenOff = true;

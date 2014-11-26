@@ -221,17 +221,17 @@ public class ClientAccSensorService extends Service implements
 
 	private void startForegroundCompat() {
 		try {
-			Notification status = new Notification();
-			status.flags |= Notification.FLAG_FOREGROUND_SERVICE;
-
-			startForeground(1, status);
+//			Notification status = new Notification();
+//			status.flags |= Notification.FLAG_FOREGROUND_SERVICE;
+//
+//			startForeground(1, status);
 			
-//			Notification notification = new Notification(R.drawable.ic_launcher, "逼逼机已启动...",
-//			        System.currentTimeMillis());
-//			Intent notificationIntent = new Intent();
-//			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-//			notification.setLatestEventInfo(this, "逼逼机","前台服务", pendingIntent);
-//			startForeground(1, notification);
+			Notification notification = new Notification(R.drawable.ic_launcher, "逼逼机已启动...",
+			        System.currentTimeMillis());
+			Intent notificationIntent = new Intent();
+			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+			notification.setLatestEventInfo(this, "逼逼机","前台服务", pendingIntent);
+			startForeground(1, notification);
 			Log.d(G.LOG_TAG, "前台服务");
 			if (Build.VERSION.SDK_INT < 18) {
 				Log.d(G.LOG_TAG, "startForgroundCompat");
