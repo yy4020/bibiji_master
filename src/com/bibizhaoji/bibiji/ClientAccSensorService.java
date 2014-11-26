@@ -132,15 +132,15 @@ public class ClientAccSensorService extends Service implements SensorEventListen
 				Log.d(G.LOG_TAG, "手机静止. +result-->" + mClient.getResult());
 
 				if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_NONE) {
-					if (idle_count == 1) {
-						mIWorkerService.stop();
-						updateInterval = 200;
-					} else if (idle_count == 0 || idle_count == 2) {
+					// if (idle_count == 1) {
+					// mIWorkerService.stop();
+					// updateInterval = 200;
+					// } else if (idle_count == 0 || idle_count == 2) {
 						mIWorkerService.start();
-						idle_count = 0;
+					// idle_count = 0;
 						updateInterval = 3000;
-					}
-					idle_count++;
+					// }
+					// idle_count++;
 					Log.d(G.LOG_TAG, "STATE_NONE count-->" + idle_count);
 					mHandler.sendEmptyMessageDelayed(MSG_CHECK_STATUS, updateInterval);
 				} else if (mClient.getResult() == WorkerRemoteRecognizerService.STATE_MATCH) {
