@@ -228,7 +228,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		originalVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		maximalVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maximalVol, 0);
+		audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, originalVol, 0);
 		mediaPlayer = MediaPlayer.create(this, soundResourceId);
 		mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
 		mediaPlayer.setLooping(true);
